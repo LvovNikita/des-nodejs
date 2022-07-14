@@ -10,6 +10,9 @@ const _FP = require('./tables/IP-1')
 const fs = require('fs')
 
 const byteToBinary = byte => byte.toString(2).padStart(8, 0)
+const arrayLeftShift = (arr, shiftAmountOfBits) => [...arr.slice(shiftAmountOfBits), ...arr.slice(0, shiftAmountOfBits)]
+// const bufferToBinaryArray = () => {}
+// const permutate = () => {}
 
 class DES {
     constructor(block, key) {
@@ -53,7 +56,7 @@ class DES {
      * @returns { Buffer } 7 byte key (Buffer) or Error 
      */
     static allocateKey = (key) => {
-        const KEY_SIZE_BYTES = 7
+        const KEY_SIZE_BYTES = 8
         if (typeof key === 'string' || Buffer.isBuffer(key)) {
             if (Buffer.from(key).length !== KEY_SIZE_BYTES && DES.showWarnings) {
                 console.warn('Warning: Provided key length isn\'t equal to 56 bits, so it will be truncated or repeated')
@@ -69,6 +72,7 @@ class DES {
      * @returns { this }
      */
     transformByteBlockToBinary() {
+        const BLOCK_SIZE_BITS = 64
         const blockAsBinaryArray = Array
             .from(this.block)
             .map(byte => byteToBinary(byte))
@@ -76,7 +80,7 @@ class DES {
             .split('')
         this.block = blockAsBinaryArray
         this.status.push('TRANSOFRM_BYTE_BLOCK_TO_BINARY')
-        if (this.block.length !== 64) {
+        if (this.block.length !== BLOCK_SIZE_BITS) {
             throw new Error('Something went wrong during the byte block to binary transforamtion')
         }
         return this
@@ -108,11 +112,75 @@ class DES {
         return this
     }
 
+    transformByteKeyToBinary() {
+        // TODO: вынести в отдельную функция bufferToBinaryArray()
+        const KEY_SIZE_BITS = 64
+        const keyAsBinaryArray = Array
+            .from(this.key)
+            .map(byte => byteToBinary(byte))
+            .reduce((prev, curr) => prev + curr)
+            .split('')
+        this.key = keyAsBinaryArray
+        this.status.push('|- KEYS: TRANSOFRM_BYTE_KEY_TO_BINARY')
+        if (this.key.length !== KEY_SIZE_BITS) {
+            throw new Error('Something went wrong during the byte key to binary transforamtion')
+        }
+        return this
+    }
+
+    pc1() {
+        // TODO: внести перестановки в отдельную функцию permutate()
+        const KEY_SIZE_BITS_AFTER_PC1 = 56
+        const keyAfterPC1 = new Array(KEY_SIZE_BITS_AFTER_PC1)
+        for (let i = 0; i < KEY_SIZE_BITS_AFTER_PC1; i++) {
+            keyAfterPC1[i] = this.key[_PC1[i]]
+        }
+        this.key = keyAfterPC1
+        this.status.push('|- KEYS: PC-1_KEY_BITS_PERMUTATION')
+        return this
+    }
+
+    getKeyHalves() {
+        this.Ci = [this.key.slice(0, 28)]
+        this.Di = [this.key.slice(28)]
+        this.status.push('|- KEYS: GET_KEY_HALVES_C0_D0')
+        return this
+    }
+
+    getRoundKeysCiDiParts() {
+        const NUM_OF_ROUNDS = 16
+        const ROUNDS_WITH_ONE_BIT_SHIFT = [1, 2, 9, 16]
+        let shiftAmountOfBits
+        for (let i = 1; i <= NUM_OF_ROUNDS; i++) {
+            shiftAmountOfBits = 2
+            if (ROUNDS_WITH_ONE_BIT_SHIFT.includes(i)) {
+                shiftAmountOfBits = 1
+            }
+            this.Ci.push(arrayLeftShift(this.Ci[i - 1], shiftAmountOfBits))
+            this.Di.push(arrayLeftShift(this.Di[i - 1], shiftAmountOfBits))
+        }
+        this.status.push('GET_ROUND_KEYS')
+        return this
+    }
+
+    generateRoundKeys() {
+        this
+            .transformByteKeyToBinary()
+            .pc1()
+            .getKeyHalves()
+            .getRoundKeysCiDiParts()
+            // concatCiDiPartsOfRoundKey()
+            // pc2()
+        // this.status.push('GENERATE_ROUND_KEYS')
+        return this
+    }
+
     encrypt() {
         this
             .transformByteBlockToBinary()
             .ip()
             .getBlockHalves()
+            .generateRoundKeys()
         return this
     }
 
@@ -136,9 +204,7 @@ module.exports = DES
 
 // DES.encrypt(data, key) = 
 // getData(data)
-// .getKey(key)
-// .IP(IPtable)
-// .getBlocksHalves()
+// ...
 // .getRoundKeys(PC1, PC2, PC1table, PC2table)
 // .F(E, S, P, Etable, Stable, Ptable)
 // .FP(FPtable)
