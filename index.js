@@ -12,7 +12,13 @@ const fs = require('fs')
 const byteToBinary = byte => byte.toString(2).padStart(8, 0)
 const arrayLeftShift = (arr, shiftAmountOfBits) => [...arr.slice(shiftAmountOfBits), ...arr.slice(0, shiftAmountOfBits)]
 // const bufferToBinaryArray = () => {}
-// const permutate = () => {}
+const permutate = (src, pbox) => {
+    const result = []
+    for (let i = 0; i < pbox.length; i++) {
+        result[i] = src[pbox[i]]
+    }
+    return result
+}
 
 class DES {
     constructor(block, key) {
@@ -71,7 +77,7 @@ class DES {
      * Transforms 8 byte block to 64 bits block
      * @returns { this }
      */
-    transformByteBlockToBinary() {
+    #transformByteBlockToBinary() {
         const BLOCK_SIZE_BITS = 64
         const blockAsBinaryArray = Array
             .from(this.block)
@@ -93,10 +99,11 @@ class DES {
     ip() {
         const BLOCK_SIZE_BITS = 64
         const blockAfterIP = new Array(BLOCK_SIZE_BITS)
-        for (let i = 0; i < BLOCK_SIZE_BITS; i++) {
-            blockAfterIP[i] = this.block[_IP[i]]
-        }
-        this.block = blockAfterIP
+        // for (let i = 0; i < BLOCK_SIZE_BITS; i++) {
+        //     blockAfterIP[i] = this.block[_IP[i]]
+        // }
+        // this.block = blockAfterIP
+        this.block = permutate(this.block, _IP)
         this.status.push('INITIAL_PERMUTATION')
         return this
     }
@@ -129,12 +136,12 @@ class DES {
     }
 
     pc1() {
-        // TODO: внести перестановки в отдельную функцию permutate()
         const KEY_SIZE_BITS_AFTER_PC1 = 56
-        const keyAfterPC1 = new Array(KEY_SIZE_BITS_AFTER_PC1)
-        for (let i = 0; i < KEY_SIZE_BITS_AFTER_PC1; i++) {
-            keyAfterPC1[i] = this.key[_PC1[i]]
-        }
+        // const keyAfterPC1 = new Array(KEY_SIZE_BITS_AFTER_PC1)
+        // for (let i = 0; i < KEY_SIZE_BITS_AFTER_PC1; i++) {
+        //     keyAfterPC1[i] = this.key[_PC1[i]]
+        // }
+        const keyAfterPC1 = permutate(this.key, _PC1)
         this.key = keyAfterPC1
         this.status.push('|- KEYS: PC-1_KEY_BITS_PERMUTATION')
         return this
@@ -147,19 +154,30 @@ class DES {
         return this
     }
 
-    getRoundKeysCiDiParts() {
+    initRoundKeys() {
         const NUM_OF_ROUNDS = 16
         const ROUNDS_WITH_ONE_BIT_SHIFT = [1, 2, 9, 16]
+        this.roundKeys = []
         let shiftAmountOfBits
         for (let i = 1; i <= NUM_OF_ROUNDS; i++) {
             shiftAmountOfBits = 2
-            if (ROUNDS_WITH_ONE_BIT_SHIFT.includes(i)) {
-                shiftAmountOfBits = 1
-            }
+            if (ROUNDS_WITH_ONE_BIT_SHIFT.includes(i)) shiftAmountOfBits = 1
             this.Ci.push(arrayLeftShift(this.Ci[i - 1], shiftAmountOfBits))
             this.Di.push(arrayLeftShift(this.Di[i - 1], shiftAmountOfBits))
+            this.roundKeys.push([...this.Ci[i], ...this.Di[i]])   
         }
-        this.status.push('GET_ROUND_KEYS')
+        delete this.Ci
+        delete this.Di
+        this.status.push('|- KEYS: INIT_ROUND_KEYS')
+        return this
+    }
+
+    pc2() {
+        const NUM_OF_ROUND_KEYS = 16
+        for (let i = 0; i < NUM_OF_ROUND_KEYS; i++) {
+            this.roundKeys[i] = permutate(this.roundKeys[i], _PC2)
+        }
+        this.status.push('|- KEYS: PC-2_ROUND_KEYS_BITS_PERMUTATION')
         return this
     }
 
@@ -168,16 +186,15 @@ class DES {
             .transformByteKeyToBinary()
             .pc1()
             .getKeyHalves()
-            .getRoundKeysCiDiParts()
-            // concatCiDiPartsOfRoundKey()
-            // pc2()
-        // this.status.push('GENERATE_ROUND_KEYS')
+            .initRoundKeys()
+            .pc2()
+        this.status.push('|- KEYS: DONE!')
         return this
     }
 
     encrypt() {
         this
-            .transformByteBlockToBinary()
+            .#transformByteBlockToBinary()
             .ip()
             .getBlockHalves()
             .generateRoundKeys()
