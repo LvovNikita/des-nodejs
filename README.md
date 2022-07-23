@@ -50,20 +50,23 @@ key: Buffer(8) [Uint8Array] [75, 69, 89, 75, 69, 89, 75, 69] // (*4)
 
 ```
 encrypt() = this
-    .transformByteBlockToBinary()
-    .ip()
-    .getBlockHalves()
-    .generateRoundKeys()
+    .#byteBlockToBinary()
+    .#ip()
+    .#getBlockHalves()
+    .#generateRoundKeys()
+    .#f()
+    .#fp()
+    .#binaryBlockToBytes()
 ```
 
 * encrypt() — зашифровать 64-битный блок данных. Включает последовательность следующих шагов:
-    * .transformByteBlockToBinary() — блок данных, представляющий из себя 8-байтовый Buffer представить в виде двоичного массива;
+    * .byteBlockToBinary() — блок данных, представляющий из себя 8-байтовый Buffer представить в виде двоичного массива;
     * .ip() — начальная перестановка бит блока IP;
     * .getBlockHalves() — разделить блок на две части L и R по 32 бита каждая;
     * .generateRoundKeys() — сгенерировать раундовые подключи;
     * .f() — раундовая функция F
     * .fp() — конечная перестановка бит блока IP-1 (FP)
-    * .transformBinaryBlockToBytes() — ...
+    * .binaryBlockToBytes() — ...
 
 ---
 
@@ -71,15 +74,15 @@ encrypt() = this
 
 ```
 generateRoundKeys = this
-    .transformByteKeyToBinary()
-    .pc1()
-    .getKeyHalves()
-    .initRoundKeys()
-    .pc2()
+    .#byteKeyToBinary()
+    .#pc1()
+    .#getKeyHalves()
+    .#initRoundKeys()
+    .#pc2()
 ```
 
 * generateRoundKeys() — сгенерировать 16 раундовых ключей
-    * .transformByteKeyToBinary() — ...
+    * .byteKeyToBinary() — ...
     * .pc1() — ...
     * .getKeyHalves() — ...
     * .initRoundKeys() — ...
@@ -179,7 +182,7 @@ key: [
 ] // (*5)
 ```
 
-# private DES.pc1()
+### private DES.pc1()
 
 Приватный метод. Из 64-битного ключа отбросить биты чётности (7, 15, 23, 31, 39, 47, 55, 63) и пермешать их, согласно таблице PC-1 в файле ./tables/PC-1.js. В результате ключ сжимается до 56 бит.
 
@@ -197,7 +200,7 @@ key: [
 ] // (*6)
 ```
 
-# private DES.getKeyHalves()
+### private DES.getKeyHalves()
 
 ...
 

@@ -1,5 +1,6 @@
 'use strict'
 
+// DES tables
 const _IP = require('./tables/IP')
 const _PC1 = require('./tables/PC-1')
 const _PC2 = require('./tables/PC-2')
@@ -9,26 +10,10 @@ const _E = require('./tables/E')
 const _FP = require('./tables/IP-1')
 const fs = require('fs')
 
-const byteToBinary = byte => byte.toString(2).padStart(8, 0)
-
-const arrayLeftShift = (arr, shiftAmountOfBits) => [
-    ...arr.slice(shiftAmountOfBits),
-    ...arr.slice(0, shiftAmountOfBits)
-]
-
-const bufferToBinaryArray = buffer => Array
-    .from(buffer)
-    .map(byte => byteToBinary(byte))
-    .reduce((prev, curr) => prev + curr)
-    .split('')
-
-const permutate = (src, pbox) => {
-    const result = []
-    for (let i = 0; i < pbox.length; i++) {
-        result[i] = src[pbox[i]]
-    }
-    return result
-}
+// Utils
+const arrayLeftShift = require('./utils/arrayLeftShift')
+const bufferToBinaryArray = require('./utils/bufferToBinaryArray')
+const permutate = require('./utils/permutate')
 
 class DES {
     constructor(block, key) {
@@ -106,7 +91,6 @@ class DES {
      * @returns { this }
      */
     #ip() {
-        const BLOCK_SIZE_BITS = 64
         this.block = permutate(this.block, _IP)
         this.status.push('INITIAL_PERMUTATION')
         return this
