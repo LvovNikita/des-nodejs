@@ -1,4 +1,4 @@
-module.exports = (arr, shiftAmountOfBits) => [
-    ...arr.slice(shiftAmountOfBits),
-    ...arr.slice(0, shiftAmountOfBits)
+module.exports = (arr, shiftBitSize) => [
+    ...arr.slice(shiftBitSize),
+    ...arr.slice(0, shiftBitSize)
 ]

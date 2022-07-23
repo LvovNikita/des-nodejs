@@ -73,7 +73,7 @@ class DES {
     }
 
     /**
-     * Transforms 8 byte block to 64 bits block
+     * Converts 8 byte block to 64 bits block
      * @returns { this }
      */
     #byteBlockToBinary() {
@@ -82,7 +82,7 @@ class DES {
         if (this.block.length !== BLOCK_SIZE_BITS) {
             throw new Error('Something went wrong during the byte block to binary transforamtion')
         }
-        this.status.push('TRANSOFRM_BYTE_BLOCK_TO_BINARY')
+        this.status.push('CONVERT_BYTE_BLOCK_TO_BINARY')
         return this
     }
 
@@ -119,7 +119,7 @@ class DES {
         if (this.key.length !== KEY_SIZE_BITS) {
             throw new Error('Something went wrong during the byte key to binary transforamtion')
         }
-        this.status.push('|- KEYS: TRANSOFRM_BYTE_KEY_TO_BINARY')
+        this.status.push('|- KEYS: CONVERT_BYTE_KEY_TO_BINARY')
         return this
     }
 
@@ -138,27 +138,31 @@ class DES {
     }
 
     /**
-     * 
+     * Get key halves C0, D0 (28 bits each)
      * @returns { this }
      */
-    getKeyHalves() {
+    #getKeyHalves() {
         const KEY_SIZE_BITS_AFTER_PC1 = 56
         this.Ci = [this.key.slice(0, KEY_SIZE_BITS_AFTER_PC1/2)]
         this.Di = [this.key.slice(KEY_SIZE_BITS_AFTER_PC1/2)]
+        delete this.key
         this.status.push('|- KEYS: GET_KEY_HALVES_C0_D0')
         return this
     }
 
-    initRoundKeys() {
+    /**
+     * Generate 16 round keys
+     * @returns { this }
+     */
+    #initRoundKeys() {
         const NUM_OF_ROUNDS = 16
         const ROUNDS_WITH_ONE_BIT_SHIFT = [1, 2, 9, 16]
         this.roundKeys = []
-        let shiftAmountOfBits
+        // Todo: check keys size and qty 
         for (let i = 1; i <= NUM_OF_ROUNDS; i++) {
-            shiftAmountOfBits = 2
-            if (ROUNDS_WITH_ONE_BIT_SHIFT.includes(i)) shiftAmountOfBits = 1
-            this.Ci.push(arrayLeftShift(this.Ci[i - 1], shiftAmountOfBits))
-            this.Di.push(arrayLeftShift(this.Di[i - 1], shiftAmountOfBits))
+            const shiftBitSize = ROUNDS_WITH_ONE_BIT_SHIFT.includes(i) ? 1 : 2
+            this.Ci.push(arrayLeftShift(this.Ci[i - 1], shiftBitSize))
+            this.Di.push(arrayLeftShift(this.Di[i - 1], shiftBitSize))
             this.roundKeys.push([...this.Ci[i], ...this.Di[i]])   
         }
         delete this.Ci
@@ -167,11 +171,13 @@ class DES {
         return this
     }
 
-    pc2() {
-        const NUM_OF_ROUND_KEYS = 16
-        for (let i = 0; i < NUM_OF_ROUND_KEYS; i++) {
-            this.roundKeys[i] = permutate(this.roundKeys[i], _PC2)
-        }
+    /**
+     * Select and permutate 48 bits from 56 bits key (drop some bits) (PC-2)
+     * @returns { this }
+     */
+    #pc2() {
+        this.roundKeys = this.roundKeys
+            .map(key => permutate(key, _PC2))
         this.status.push('|- KEYS: PC-2_ROUND_KEYS_BITS_PERMUTATION')
         return this
     }  
@@ -240,9 +246,9 @@ class DES {
         this
             .#byteKeyToBinary()
             .#pc1()
-            .getKeyHalves()
-            .initRoundKeys()
-            .pc2()
+            .#getKeyHalves()
+            .#initRoundKeys()
+            .#pc2()
         this.status.push('|- KEYS: DONE!')
         return this
     }
@@ -253,9 +259,9 @@ class DES {
             .#ip()
             .#getBlockHalves()
             .generateRoundKeys()
-            .f()
-            .fp()
-            .transformBinaryBlockToBytes()
+            // .f()
+            // .fp()
+            // .transformBinaryBlockToBytes()
         return this
     }
 
