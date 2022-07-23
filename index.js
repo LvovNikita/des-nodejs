@@ -115,6 +115,7 @@ class DES {
     getBlockHalves () {
         this.L = this.block.slice(0, 32)
         this.R = this.block.slice(32)
+        delete this.block
         this.status.push('GET_BLOCK_HALVES_L_R')
         return this
     }
@@ -179,7 +180,7 @@ class DES {
         }
         this.status.push('|- KEYS: PC-2_ROUND_KEYS_BITS_PERMUTATION')
         return this
-    }
+    }  
 
     generateRoundKeys() {
         this
@@ -192,12 +193,75 @@ class DES {
         return this
     }
 
+    f() {
+        const NUM_OF_ROUNDS = 16
+        const expand = permutate
+        this.R_chunks = []
+        for (let i = 0; i < NUM_OF_ROUNDS; i++) {
+            // Li+1 = R i
+            this.L_prev = [...this.L]
+            this.L = this.R
+            // expand R
+            this.R = expand(this.R, _E)
+            // xor R with round key
+            this.R.map((bit, index) => bit ^ this.roundKeys[i][index])
+            // splitRto8chunksOfbits 
+            const NUM_OF_CHUNKS = 8
+            const CHUNK_SIZE_BITS = 6
+            this.R_chunks.push([])
+            for (let j = 0; j < NUM_OF_CHUNKS; j++) {
+                const chunkStartPos = j * CHUNK_SIZE_BITS
+                const chunkEndPos = (j + 1) * CHUNK_SIZE_BITS
+                this.R_chunks[i].push(this.R.slice(chunkStartPos, chunkEndPos))
+            }
+            // S boxes
+            this.R_chunks[i].map((chunk, index) => {
+                const row = parseInt(chunk[0] + chunk[5], 2)
+                const column = parseInt(chunk.slice(1, 5).reduce((prev, curr) => prev + curr), 2)
+                return Array.from(_S[index][row][column].toString(2).padStart(4, '0'))
+            }) 
+            this.R = this.R_chunks[i].flat()
+            // P boxes
+            this.R = permutate(this.R, _P)
+            // join
+            this.R.map((bit, index) => bit ^ this.L_prev[index])
+        }
+        delete this.L_prev
+        delete this.R_chunks
+        this.ciphertext = [...this.L, ...this.R] 
+        delete this.L
+        delete this.R
+        return this
+    }
+
+    fp() {
+        this.ciphertext = permutate(this.ciphertext, _FP)
+        return this
+    }
+
+    transformBinaryBlockToBytes() {
+        const BYTES = 8
+        const result = []
+        for (let i = 0; i < BYTES; i++) {
+            result.push(this.ciphertext
+                .slice(i * 8, (i + 1) * 8)
+                .reduce((prev, curr) => prev + curr)
+            )
+        }
+        this.ciphertext = Buffer.from(result)
+        this.ciphertextAsString = this.ciphertext.toString()
+        return this
+    }
+
     encrypt() {
         this
             .#transformByteBlockToBinary()
             .ip()
             .getBlockHalves()
             .generateRoundKeys()
+            .f()
+            .fp()
+            .transformBinaryBlockToBytes()
         return this
     }
 
@@ -209,19 +273,6 @@ module.exports = DES
 // static get _IP() { return _IP }
 
 // NOTES:
-
-// getRoundKeys(PC1cb, PC2cb, PC1table, PC2table)
 // F(Ecb, Scb, Pcb, Etable, Stable, Ptable)
 // FP(FPtable)
-// PC1(PC1table)
-// PC2(PC2table)
-// E(Etable)
-// S(Stable)
 // P(Ptable)
-
-// DES.encrypt(data, key) = 
-// getData(data)
-// ...
-// .getRoundKeys(PC1, PC2, PC1table, PC2table)
-// .F(E, S, P, Etable, Stable, Ptable)
-// .FP(FPtable)
