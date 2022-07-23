@@ -10,8 +10,18 @@ const _FP = require('./tables/IP-1')
 const fs = require('fs')
 
 const byteToBinary = byte => byte.toString(2).padStart(8, 0)
-const arrayLeftShift = (arr, shiftAmountOfBits) => [...arr.slice(shiftAmountOfBits), ...arr.slice(0, shiftAmountOfBits)]
-// const bufferToBinaryArray = () => {}
+
+const arrayLeftShift = (arr, shiftAmountOfBits) => [
+    ...arr.slice(shiftAmountOfBits),
+    ...arr.slice(0, shiftAmountOfBits)
+]
+
+const bufferToBinaryArray = buffer => Array
+    .from(buffer)
+    .map(byte => byteToBinary(byte))
+    .reduce((prev, curr) => prev + curr)
+    .split('')
+
 const permutate = (src, pbox) => {
     const result = []
     for (let i = 0; i < pbox.length; i++) {
@@ -24,7 +34,9 @@ class DES {
     constructor(block, key) {
         this.status = ['INIT & ALLOCATE_KEY']
         this.key = DES.allocateKey(key)
-        // Todo: check block type
+        if (!Buffer.isBuffer(block) || !Buffer.length === 8) {
+            throw new Error('Block must be a 8-byte Buffer')
+        }
         this.block = block
     }
 
@@ -63,6 +75,7 @@ class DES {
      * @returns { Buffer } 7 byte key (Buffer) or Error 
      */
     static allocateKey = (key) => {
+        // Todo: get 56 bits key and add parity bits to length 64
         const KEY_SIZE_BYTES = 8
         if (typeof key === 'string' || Buffer.isBuffer(key)) {
             if (Buffer.from(key).length !== KEY_SIZE_BYTES && DES.showWarnings) {
@@ -78,80 +91,76 @@ class DES {
      * Transforms 8 byte block to 64 bits block
      * @returns { this }
      */
-    #transformByteBlockToBinary() {
-        // Todo: check block size
+    #byteBlockToBinary() {
         const BLOCK_SIZE_BITS = 64
-        this.block = Array
-            .from(this.block)
-            .map(byte => byteToBinary(byte))
-            .reduce((prev, curr) => prev + curr)
-            .split('')
-        this.status.push('TRANSOFRM_BYTE_BLOCK_TO_BINARY')
+        this.block = bufferToBinaryArray(this.block)
         if (this.block.length !== BLOCK_SIZE_BITS) {
             throw new Error('Something went wrong during the byte block to binary transforamtion')
         }
+        this.status.push('TRANSOFRM_BYTE_BLOCK_TO_BINARY')
         return this
     }
 
     /**
-     * Initial Permutation
+     * Initial Permutation (IP)
      * @returns { this }
      */
     #ip() {
         const BLOCK_SIZE_BITS = 64
-        const blockAfterIP = new Array(BLOCK_SIZE_BITS)
-        // for (let i = 0; i < BLOCK_SIZE_BITS; i++) {
-        //     blockAfterIP[i] = this.block[_IP[i]]
-        // }
-        // this.block = blockAfterIP
         this.block = permutate(this.block, _IP)
         this.status.push('INITIAL_PERMUTATION')
         return this
     }
 
     /**
-     * Get block halves (L0 and R0)
-     * @returns {this}
+     * Get 32-bits block halves (L0 and R0)
+     * @returns { this }
      */
-    getBlockHalves () {
-        this.L = this.block.slice(0, 32)
-        this.R = this.block.slice(32)
+    #getBlockHalves () {
+        const BLOCK_SIZE_BITS = 64
+        this.L = this.block.slice(0, BLOCK_SIZE_BITS/2)
+        this.R = this.block.slice(BLOCK_SIZE_BITS/2)
         delete this.block
         this.status.push('GET_BLOCK_HALVES_L_R')
         return this
     }
 
-    transformByteKeyToBinary() {
-        // TODO: вынести в отдельную функция bufferToBinaryArray()
+    /**
+     * Transforms 8 byte key to 64 bits key
+     * @returns { this }
+     */
+    #byteKeyToBinary() {
         const KEY_SIZE_BITS = 64
-        const keyAsBinaryArray = Array
-            .from(this.key)
-            .map(byte => byteToBinary(byte))
-            .reduce((prev, curr) => prev + curr)
-            .split('')
-        this.key = keyAsBinaryArray
-        this.status.push('|- KEYS: TRANSOFRM_BYTE_KEY_TO_BINARY')
+        this.key = bufferToBinaryArray(this.key)
         if (this.key.length !== KEY_SIZE_BITS) {
             throw new Error('Something went wrong during the byte key to binary transforamtion')
         }
+        this.status.push('|- KEYS: TRANSOFRM_BYTE_KEY_TO_BINARY')
         return this
     }
 
-    pc1() {
+    /**
+     * Select and permutate 56 bits from 64 bits key (drop parity bits) (PC-1)
+     * @returns { this }
+     */
+    #pc1() {
         const KEY_SIZE_BITS_AFTER_PC1 = 56
-        // const keyAfterPC1 = new Array(KEY_SIZE_BITS_AFTER_PC1)
-        // for (let i = 0; i < KEY_SIZE_BITS_AFTER_PC1; i++) {
-        //     keyAfterPC1[i] = this.key[_PC1[i]]
-        // }
-        const keyAfterPC1 = permutate(this.key, _PC1)
-        this.key = keyAfterPC1
+        this.key = permutate(this.key, _PC1)
+        if (this.key.length !== KEY_SIZE_BITS_AFTER_PC1) {
+            throw new Error('Something went wrong during the PC-1')
+        }
         this.status.push('|- KEYS: PC-1_KEY_BITS_PERMUTATION')
         return this
     }
 
+    /**
+     * 
+     * @returns { this }
+     */
     getKeyHalves() {
-        this.Ci = [this.key.slice(0, 28)]
-        this.Di = [this.key.slice(28)]
+        const KEY_SIZE_BITS_AFTER_PC1 = 56
+        this.Ci = [this.key.slice(0, KEY_SIZE_BITS_AFTER_PC1/2)]
+        this.Di = [this.key.slice(KEY_SIZE_BITS_AFTER_PC1/2)]
         this.status.push('|- KEYS: GET_KEY_HALVES_C0_D0')
         return this
     }
@@ -245,8 +254,8 @@ class DES {
 
     generateRoundKeys() {
         this
-            .transformByteKeyToBinary()
-            .pc1()
+            .#byteKeyToBinary()
+            .#pc1()
             .getKeyHalves()
             .initRoundKeys()
             .pc2()
@@ -256,9 +265,9 @@ class DES {
 
     encrypt() {
         this
-            .#transformByteBlockToBinary()
+            .#byteBlockToBinary()
             .#ip()
-            .getBlockHalves()
+            .#getBlockHalves()
             .generateRoundKeys()
             .f()
             .fp()
