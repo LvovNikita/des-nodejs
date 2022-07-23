@@ -24,6 +24,7 @@ class DES {
     constructor(block, key) {
         this.status = ['INIT & ALLOCATE_KEY']
         this.key = DES.allocateKey(key)
+        // Todo: check block type
         this.block = block
     }
 
@@ -65,7 +66,7 @@ class DES {
         const KEY_SIZE_BYTES = 8
         if (typeof key === 'string' || Buffer.isBuffer(key)) {
             if (Buffer.from(key).length !== KEY_SIZE_BYTES && DES.showWarnings) {
-                console.warn('Warning: Provided key length isn\'t equal to 56 bits, so it will be truncated or repeated')
+                console.warn('Warning: Provided key length isn\'t equal to 64 bits, so it will be truncated or repeated')
             }
             return key = Buffer.alloc(KEY_SIZE_BYTES, key)
         } else {
@@ -78,13 +79,13 @@ class DES {
      * @returns { this }
      */
     #transformByteBlockToBinary() {
+        // Todo: check block size
         const BLOCK_SIZE_BITS = 64
-        const blockAsBinaryArray = Array
+        this.block = Array
             .from(this.block)
             .map(byte => byteToBinary(byte))
             .reduce((prev, curr) => prev + curr)
             .split('')
-        this.block = blockAsBinaryArray
         this.status.push('TRANSOFRM_BYTE_BLOCK_TO_BINARY')
         if (this.block.length !== BLOCK_SIZE_BITS) {
             throw new Error('Something went wrong during the byte block to binary transforamtion')
@@ -96,7 +97,7 @@ class DES {
      * Initial Permutation
      * @returns { this }
      */
-    ip() {
+    #ip() {
         const BLOCK_SIZE_BITS = 64
         const blockAfterIP = new Array(BLOCK_SIZE_BITS)
         // for (let i = 0; i < BLOCK_SIZE_BITS; i++) {
@@ -182,17 +183,6 @@ class DES {
         return this
     }  
 
-    generateRoundKeys() {
-        this
-            .transformByteKeyToBinary()
-            .pc1()
-            .getKeyHalves()
-            .initRoundKeys()
-            .pc2()
-        this.status.push('|- KEYS: DONE!')
-        return this
-    }
-
     f() {
         const NUM_OF_ROUNDS = 16
         const expand = permutate
@@ -253,16 +243,31 @@ class DES {
         return this
     }
 
+    generateRoundKeys() {
+        this
+            .transformByteKeyToBinary()
+            .pc1()
+            .getKeyHalves()
+            .initRoundKeys()
+            .pc2()
+        this.status.push('|- KEYS: DONE!')
+        return this
+    }
+
     encrypt() {
         this
             .#transformByteBlockToBinary()
-            .ip()
+            .#ip()
             .getBlockHalves()
             .generateRoundKeys()
             .f()
             .fp()
             .transformBinaryBlockToBytes()
         return this
+    }
+
+    decrypt() {
+
     }
 
     static showWarnings = false
