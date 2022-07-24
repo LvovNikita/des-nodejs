@@ -165,8 +165,10 @@ class DES {
             this.Di.push(arrayLeftShift(this.Di[i - 1], shiftBitSize))
             this.roundKeys.push([...this.Ci[i], ...this.Di[i]])   
         }
-        delete this.Ci
-        delete this.Di
+        collectGarbage: {
+            delete this.Ci
+            delete this.Di
+        }
         this.status.push('|- KEYS: INIT_ROUND_KEYS')
         return this
     }
@@ -180,46 +182,85 @@ class DES {
             .map(key => permutate(key, _PC2))
         this.status.push('|- KEYS: PC-2_ROUND_KEYS_BITS_PERMUTATION')
         return this
-    }  
+    }
+
+    #getNewL() {
+        this.L_prev = [...this.L]
+        this.L = [...this.R]
+        return this
+    }
+
+    #e() {
+        const expand = permutate
+        this.R = expand(this.R, _E)
+        return this
+    }
+    
+    #RXorRoundKey(round) {
+        this.R = this.R.map((bit, index) => (bit ^ this.roundKeys[round][index]).toString())
+        return this
+    }
+
+    /**
+     * Split R to 8 chunks of 6 bits
+     * @returns { this }
+     */
+    #splitR(round) {
+        const NUM_OF_CHUNKS = 8
+        const CHUNK_SIZE_BITS = 6
+        this.R_chunks.push([])
+        for (let j = 0; j < NUM_OF_CHUNKS; j++) {
+            const chunkStartPos = j * CHUNK_SIZE_BITS
+            const chunkEndPos = (j + 1) * CHUNK_SIZE_BITS
+            this.R_chunks[round].push(this.R.slice(chunkStartPos, chunkEndPos))
+        }
+        return this
+    }
+
+    #s(round) {
+        // ??? console.log this.R_chunks before and after!
+        this.R_chunks[round].map((chunk, index) => {
+            const row = parseInt(chunk[0] + chunk[5], 2)
+            const column = parseInt(chunk.slice(1, 5).reduce((prev, curr) => prev + curr), 2)
+            return Array.from(_S[index][row][column].toString(2).padStart(4, '0'))
+        })
+        this.R = this.R_chunks[round].flat()
+        return this 
+    }
+
+    #p() {
+        this.R = permutate(this.R, _P)
+        return this
+    }
+
+    #getNewR() {
+        // ??? console.log this.R before and after!
+        this.R.map((bit, index) => bit ^ this.L_prev[index])
+        return this
+    }
 
     f() {
-        const NUM_OF_ROUNDS = 16
-        const expand = permutate
+        // const NUM_OF_ROUNDS = 16
+        const NUM_OF_ROUNDS = 1
         this.R_chunks = []
         for (let i = 0; i < NUM_OF_ROUNDS; i++) {
-            // Li+1 = R i
-            this.L_prev = [...this.L]
-            this.L = this.R
-            // expand R
-            this.R = expand(this.R, _E)
-            // xor R with round key
-            this.R.map((bit, index) => bit ^ this.roundKeys[i][index])
-            // splitRto8chunksOfbits 
-            const NUM_OF_CHUNKS = 8
-            const CHUNK_SIZE_BITS = 6
-            this.R_chunks.push([])
-            for (let j = 0; j < NUM_OF_CHUNKS; j++) {
-                const chunkStartPos = j * CHUNK_SIZE_BITS
-                const chunkEndPos = (j + 1) * CHUNK_SIZE_BITS
-                this.R_chunks[i].push(this.R.slice(chunkStartPos, chunkEndPos))
-            }
-            // S boxes
-            this.R_chunks[i].map((chunk, index) => {
-                const row = parseInt(chunk[0] + chunk[5], 2)
-                const column = parseInt(chunk.slice(1, 5).reduce((prev, curr) => prev + curr), 2)
-                return Array.from(_S[index][row][column].toString(2).padStart(4, '0'))
-            }) 
-            this.R = this.R_chunks[i].flat()
-            // P boxes
-            this.R = permutate(this.R, _P)
-            // join
-            this.R.map((bit, index) => bit ^ this.L_prev[index])
+            this
+                .#getNewL()
+                .#e()
+                .#RXorRoundKey(i)
+                .#splitR(i)
+                .#s(i)
+                .#p()
+                .#getNewR()
         }
-        delete this.L_prev
-        delete this.R_chunks
+        // join L and R
         this.ciphertext = [...this.L, ...this.R] 
-        delete this.L
-        delete this.R
+        collectGarbage: {
+            delete this.R_chunks
+            delete this.L_prev
+            delete this.L
+            delete this.R
+        }
         return this
     }
 
@@ -242,7 +283,7 @@ class DES {
         return this
     }
 
-    generateRoundKeys() {
+    #generateRoundKeys() {
         this
             .#byteKeyToBinary()
             .#pc1()
@@ -258,8 +299,8 @@ class DES {
             .#byteBlockToBinary()
             .#ip()
             .#getBlockHalves()
-            .generateRoundKeys()
-            // .f()
+            .#generateRoundKeys()
+            .f()
             // .fp()
             // .transformBinaryBlockToBytes()
         return this
@@ -275,8 +316,3 @@ class DES {
 module.exports = DES
 
 // static get _IP() { return _IP }
-
-// NOTES:
-// F(Ecb, Scb, Pcb, Etable, Stable, Ptable)
-// FP(FPtable)
-// P(Ptable)
