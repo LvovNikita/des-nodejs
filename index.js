@@ -300,8 +300,8 @@ class DES {
             .#getBlockHalves()
             .#generateRoundKeys()
             .f()
-            // .fp()
-            // .transformBinaryBlockToBytes()
+            .fp()
+            .transformBinaryBlockToBytes()
         return this
     }
 
