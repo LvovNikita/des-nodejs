@@ -218,13 +218,13 @@ class DES {
     }
 
     #s(round) {
-        this.R_chunks = this.R_chunks[round].map((chunk, index) => {
-            console.log(round, chunk)
+        console.log('CHUNKS BEFORE', this.R_chunks)
+        this.R_chunks[round] = this.R_chunks[round].map((chunk, index) => {
             const row = parseInt(chunk[0] + chunk[5], 2)
             const column = parseInt(chunk.slice(1, 5).reduce((prev, curr) => prev + curr), 2)
             return Array.from(_S[index][row][column].toString(2).padStart(4, '0'))
         })
-        this.R = this.R_chunks.flat()
+        this.R = this.R_chunks[round].flat()
         return this 
     }
 
@@ -234,8 +234,7 @@ class DES {
     }
 
     #getNewR() {
-        // ??? console.log this.R before and after!
-        this.R.map((bit, index) => bit ^ this.L_prev[index])
+        this.R = this.R.map((bit, index) => (bit ^ this.L_prev[index]).toString())
         return this
     }
 
@@ -251,16 +250,16 @@ class DES {
                 .#splitR(i)
                 .#s(i)
                 .#p()
-                // .#getNewR()
+                .#getNewR()
         }
         // join L and R
         this.ciphertext = [...this.L, ...this.R] 
-        // collectGarbage: {
-        //     delete this.R_chunks
-        //     delete this.L_prev
-        //     delete this.L
-        //     delete this.R
-        // }
+        collectGarbage: {
+            delete this.R_chunks
+            delete this.L_prev
+            delete this.L
+            delete this.R
+        }
         return this
     }
 
