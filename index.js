@@ -1,5 +1,7 @@
 'use strict'
 
+const { StringDecoder } = require('node:string_decoder');
+
 // DES tables
 const _IP = require('./tables/IP')
 const _PC1 = require('./tables/PC-1')
@@ -218,7 +220,7 @@ class DES {
     }
 
     #s(round) {
-        console.log('CHUNKS BEFORE', this.R_chunks)
+        // console.log('CHUNKS BEFORE', this.R_chunks)
         this.R_chunks[round] = this.R_chunks[round].map((chunk, index) => {
             const row = parseInt(chunk[0] + chunk[5], 2)
             const column = parseInt(chunk.slice(1, 5).reduce((prev, curr) => prev + curr), 2)
@@ -238,8 +240,11 @@ class DES {
         return this
     }
 
-    f() {
+    f(isDecription = false) {
         // const NUM_OF_ROUNDS = 16
+        // if (isDecription) {
+        //     this.roundKeys.reverse()
+        // }
         const NUM_OF_ROUNDS = 1
         this.R_chunks = []
         for (let i = 0; i < NUM_OF_ROUNDS; i++) {
@@ -253,7 +258,12 @@ class DES {
                 .#getNewR()
         }
         // join L and R
-        this.ciphertext = [...this.L, ...this.R] 
+        // TODO: don't use ciphertext / block properties
+        if (isDecription) {
+            this.block = [...this.L, ...this.R] 
+        } else {
+            this.ciphertext = [...this.L, ...this.R] 
+        }
         collectGarbage: {
             delete this.R_chunks
             delete this.L_prev
@@ -263,22 +273,43 @@ class DES {
         return this
     }
 
-    fp() {
-        this.ciphertext = permutate(this.ciphertext, _FP)
+    fp(isDecription) {
+        // TODO: don't use ciphertext / block properties
+        if (isDecription) {
+            this.block = permutate(this.block, _FP)
+        } else {
+            this.ciphertext = permutate(this.ciphertext, _FP)
+        }
         return this
     }
 
-    transformBinaryBlockToBytes() {
+    transformBinaryBlockToBytes(isDecription = false) {
         const BYTES = 8
-        const result = []
+        let result = []
         for (let i = 0; i < BYTES; i++) {
-            result.push(this.ciphertext
-                .slice(i * 8, (i + 1) * 8)
-                .reduce((prev, curr) => prev + curr)
-            )
+            // TODO: don't use ciphertext / block properties
+            if (isDecription) {
+                result.push(this.block
+                    .slice(i * 8, (i + 1) * 8)
+                    .reduce((prev, curr) => prev + curr)
+                )
+            } else {
+                result.push(this.ciphertext
+                    .slice(i * 8, (i + 1) * 8)
+                    .reduce((prev, curr) => prev + curr)
+                )
+            }
         }
-        this.ciphertext = Buffer.from(result)
-        this.ciphertextAsString = this.ciphertext.toString()
+        result = result.map(elem => parseInt(elem, 2))
+        // TODO: don't use ciphertext / block properties
+        const decoder = new StringDecoder('utf16le')
+        if (isDecription) {
+            this.block = Buffer.from(result)
+            this.blockAsString = decoder.write(this.block)
+        } else {
+            this.ciphertext = Buffer.from(result)
+            this.ciphertextAsString = decoder.write(this.ciphertext)
+        }
         return this
     }
 
@@ -306,7 +337,16 @@ class DES {
     }
 
     decrypt() {
-
+        this.block = this.ciphertext // TODO: get from outside
+        this.status = [] // FIXME: 
+        this
+            .#byteBlockToBinary()
+            .#ip()
+            .#getBlockHalves()
+            .f(true) // TODO: wrapper instead of argument
+            .fp(true)
+            .transformBinaryBlockToBytes(true)
+        console.log(this)
     }
 
     static showWarnings = false
