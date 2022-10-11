@@ -5,3 +5,4 @@ module.exports = buffer => Array
     .map(byte => byteToBinary(byte))
     .reduce((prev, curr) => prev + curr)
     .split('')
+    .map(Number)
