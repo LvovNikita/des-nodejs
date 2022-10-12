@@ -17,7 +17,7 @@ class DES {
     static generateRoundKeys = generateRoundKeys
 
     /**
-     * @param {(string|buffer)} key 
+     * @param {(buffer|string)} key 
      */
     constructor(key) {
         this.key = DES.allocateKey(key)                     // Array<number>
@@ -39,8 +39,11 @@ class DES {
 
     // Public methods:
 
-    encrypt(buffer, mode = 'ECB') {
-        this.data = buffer
+    /**
+     * @param {(buffer|string)} plaintext 
+     */
+    encrypt(plaintext) {
+        this.data = plaintext
         this
             .#allocateBlocks()  // block: Array<buffer>
             .#blocksToBinary()  // block: Array<number>

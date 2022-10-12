@@ -8,8 +8,10 @@ const cipherext = Buffer.from([0x2a, 0x08, 0xaa, 0x88, 0x80, 0x16, 0x3a, 0x14, 0
 
 const des = new DES(key)
 
-des.encrypt(plaintext)
-console.log(des.data, des.dataAsString) // encrypted text as buffer and string
+// des.encrypt(plaintext)
+des.encrypt('hello world')
+console.log('CIPHERTEXT: ' + des.dataAsString) // string
+console.log(des.data) // buffer
 
 // des.decrypt(cipherext)
 // console.log(des)
