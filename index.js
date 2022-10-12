@@ -20,10 +20,8 @@ class DES {
         this.key = DES.allocateKey(key)                     // Array<number>
         this.roundKeys = DES.generateRoundKeys(this.key)    // Array<Array<number>>
         this.status = ['ALLOCATE KEY']
-        this.input = null
+        this.data = null
         this.blocks = []
-        this.output = Buffer.alloc(0)
-        // TODO: merge input and output to data!
     }
     
     // Private methods:
@@ -39,7 +37,7 @@ class DES {
     // Public methods:
 
     encrypt(buffer, mode = 'ECB') {
-        this.input = buffer
+        this.data = buffer
         this
             .#allocateBlocks()  // block: Array<buffer>
             .#blocksToBinary()  // block: Array<number>
@@ -52,8 +50,8 @@ class DES {
     }
 
     get dataAsString() {
-        const decoder = new StringDecoder('utf16le')        
-        return decoder.write(this.output)
+        const decoder = new StringDecoder('utf8')
+        return decoder.write(this.data)
     }
 
     decrypt() {
