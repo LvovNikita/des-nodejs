@@ -60,13 +60,15 @@ class DES {
         return decoder.write(this.data)
     }
 
-    decrypt(buffer) {
-        this.block = buffer
+    decrypt(ciphertext) {
+        this.data = ciphertext
+        this.roundKeys.reverse()
         this
+            .#allocateBlocks()
             .#blocksToBinary()
             .#ip()
             .#getBlocksHalves()
-            .#f(true)
+            .#f()
             .#fp()
             .#blocksToBuffer()
         return this
