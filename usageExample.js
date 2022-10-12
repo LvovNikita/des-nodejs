@@ -19,3 +19,4 @@ des.encrypt(plaintext)
 
 // console.dir(des, { depth: Infinity })
 console.log(des)
+console.log(des.dataAsString)
