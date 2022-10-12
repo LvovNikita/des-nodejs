@@ -16,7 +16,10 @@ class DES {
     static allocateKey = allocateKey
     static generateRoundKeys = generateRoundKeys
 
-    constructor(key) {    
+    /**
+     * @param {(string|buffer)} key 
+     */
+    constructor(key) {
         this.key = DES.allocateKey(key)                     // Array<number>
         this.roundKeys = DES.generateRoundKeys(this.key)    // Array<Array<number>>
         this.status = ['ALLOCATE KEY']
@@ -54,17 +57,16 @@ class DES {
         return decoder.write(this.data)
     }
 
-    decrypt() {
-        // this.block = this.ciphertext // TODO: get from outside
-        // this.status = [] // FIXME: 
-        // this
-        //     .#byteBlockToBinary()
-        //     .#ip()
-        //     .#getBlockHalves()
-        //     .f(true) // TODO: wrapper instead of argument
-        //     .fp(true)
-        //     .transformBinaryBlockToBytes(true)
-        console.log('DECRYPT!')
+    decrypt(buffer) {
+        this.block = buffer
+        this
+            .#blocksToBinary()
+            .#ip()
+            .#getBlocksHalves()
+            .#f(true)
+            .#fp()
+            .#blocksToBuffer()
+        return this
     }
 }
 
