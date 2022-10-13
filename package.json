@@ -1,11 +1,11 @@
 {
     "name": "des",
-    "version": "0.1.3",
+    "version": "1.0.0",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Nikita sa3n Lvov",
     "license": "ISC",
-    "description": ""
+    "description": "Nodejs DES implementation"
 }

@@ -43,6 +43,7 @@ class DES {
      * @param {(buffer|string)} plaintext 
      */
     encrypt(plaintext) {
+        this.blocks = []
         this.data = plaintext
         this
             .#allocateBlocks()  // block: Array<buffer>
@@ -55,23 +56,20 @@ class DES {
         return this
     }
 
+    /**
+     * @param {(buffer|string)} plaintext 
+     */
+    decrypt(ciphertext) {
+        this.roundKeys.reverse()
+        this.encrypt(ciphertext)
+        return this
+    }
+
+    // Getters:
+
     get dataAsString() {
         const decoder = new StringDecoder('utf8')
         return decoder.write(this.data)
-    }
-
-    decrypt(ciphertext) {
-        this.data = ciphertext
-        this.roundKeys.reverse()
-        this
-            .#allocateBlocks()
-            .#blocksToBinary()
-            .#ip()
-            .#getBlocksHalves()
-            .#f()
-            .#fp()
-            .#blocksToBuffer()
-        return this
     }
 }
 
