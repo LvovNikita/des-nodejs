@@ -1,11 +1,14 @@
 {
     "name": "des",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "jest --watchAll"
     },
     "author": "Nikita sa3n Lvov",
     "license": "ISC",
-    "description": "Nodejs DES implementation"
+    "description": "Nodejs DES implementation",
+    "devDependencies": {
+        "jest": "^29.3.1"
+    }
 }

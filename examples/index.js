@@ -19,6 +19,8 @@ des.decrypt(ciphertext)
 console.log(des.data)           // buffer
 console.log(des.dataAsString)   // string
 
+process.exit(0) // comment to run lines below
+
 // Для шифрования файлов:
 const file = fs.readFileSync('./input.txt')
 des.encrypt(file)
