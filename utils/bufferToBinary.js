@@ -1,3 +1,5 @@
+'use strict'
+
 const byteToBinary = require('./byteToBinary') 
 
 // TODO: use buffers and Uint8Arrays instead!

@@ -1,3 +1,5 @@
+'use strict'
+
 const isNumber = require('./isNumber')
 
 // TODO: return buffer instead

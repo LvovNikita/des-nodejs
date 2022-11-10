@@ -1,4 +1,4 @@
-const size = 8 // bits
+'use strict'
 
 /**
  * pad left to whole number of bytes multiple eight
@@ -11,12 +11,14 @@ module.exports = buffer => {
         throw new Error('buffer shouldn\'t be empty')
     }
 
-    const leftPadLength = buffer.length % size
+    const SIZE = 8 // bits
+
+    const leftPadLength = buffer.length % SIZE
 
     return leftPadLength === 0 
         ? buffer
         : Buffer.concat([
-            Buffer.alloc(size - leftPadLength, 0), 
+            Buffer.alloc(SIZE - leftPadLength, 0), 
             buffer
         ])
 }

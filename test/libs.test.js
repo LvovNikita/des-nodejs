@@ -14,6 +14,224 @@ xdescribe('libs: keys', () => {
 
 
 describe('libs: data & blocks', () => {
+
+    beforeAll(() => {
+        blocksAsBinaryBeforeIP = [
+            [
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 1, 1, 0, 1, 0, 0, 0,
+                0, 1, 1, 0, 0, 1, 0, 1,
+                0, 1, 1, 0, 1, 1, 0, 0
+            ],
+            [
+                0, 1, 1, 0, 1, 1, 0, 0,
+                0, 1, 1, 0, 1, 1, 1, 1,
+                0, 0, 1, 0, 0, 0, 0, 0,
+                0, 1, 1, 1, 0, 1, 1, 1,
+                0, 1, 1, 0, 1, 1, 1, 1,
+                0, 1, 1, 1, 0, 0, 1, 0,
+                0, 1, 1, 0, 1, 1, 0, 0,
+                0, 1, 1, 0, 0, 1, 0, 0
+            ]
+        ]
+
+        blocksAsBinaryAfterIP = [
+            [
+                1, 1, 1, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 0, 0, 0, 0, 0, 0,
+                0, 1, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 0, 0, 0, 0, 0,
+                1, 0, 1, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+            ],
+            [
+                1, 1, 1, 1, 1, 0, 1, 1,
+                0, 0, 1, 0, 1, 0, 0, 0,
+                1, 1, 0, 1, 1, 0, 1, 1,
+                0, 0, 0, 1, 1, 0, 1, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                0, 1, 0, 1, 0, 0, 1, 1,
+                0, 0, 1, 1, 1, 0, 1, 0
+            ]
+        ]
+
+        blocksHalves = [
+            {
+                L: [
+                    1, 1, 1, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    1, 1, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0, 0, 0, 0
+                ],
+                R: [
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    1, 1, 1, 0, 0, 0, 0, 0,
+                    1, 0, 1, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0
+                ]
+            },
+            {
+                L: [
+                    1, 1, 1, 1, 1, 0, 1, 1,
+                    0, 0, 1, 0, 1, 0, 0, 0,
+                    1, 1, 0, 1, 1, 0, 1, 1,
+                    0, 0, 0, 1, 1, 0, 1, 0
+                ],
+                R: [
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    0, 1, 0, 1, 0, 0, 1, 1,
+                    0, 0, 1, 1, 1, 0, 1, 0
+                ]
+            }
+        ]
+
+        blockHalvesAfterSixteenRounds = [
+            [
+                1, 0, 1, 0, 0, 0, 1, 1,
+                1, 1, 1, 1, 1, 0, 0, 1,
+                1, 0, 0, 0, 1, 0, 0, 1,
+                1, 1, 0, 1, 1, 0, 0, 1,
+                0, 0, 1, 0, 1, 0, 0, 0,
+                1, 1, 0, 1, 1, 0, 1, 1,
+                0, 0, 0, 1, 1, 1, 0, 0,
+                0, 0, 0, 1, 1, 0, 1, 0
+            ],
+            [
+                1, 0, 0, 0, 0, 1, 1, 0,
+                1, 1, 1, 1, 0, 0, 0, 0,
+                1, 0, 0, 1, 1, 0, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 0,
+                1, 0, 1, 0, 1, 0, 1, 1,
+                1, 0, 1, 1, 1, 1, 1, 1,
+                0, 1, 1, 0, 0, 1, 1, 0,
+                0, 0, 0, 1, 1, 0, 0, 0
+            ]
+        ]
+
+        encryptionRoundKeys = [
+            [
+                0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0,
+                0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1,
+                1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,
+                0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0,
+                0, 1, 0, 1
+            ],
+            [
+                1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1,
+                0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0,
+                0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0,
+                1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                0, 0, 1, 0
+            ],
+            [
+                0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1,
+                1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0,
+                0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0,
+                1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                1, 1, 1, 1
+            ],
+            [
+                1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+                1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+                1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1,
+                0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0,
+                1, 0, 1, 0
+            ],
+            [
+                0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1,
+                0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+                1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0,
+                0, 0, 1, 1
+            ],
+            [
+                0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0,
+                1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0,
+                1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,
+                0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0,
+                0, 0, 0, 0
+            ],
+            [
+                1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0,
+                0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0,
+                1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1,
+                1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1,
+                0, 0, 0, 0
+            ],
+            [
+                0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,
+                0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0,
+                0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1,
+                1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+                1, 0, 0, 0
+            ],
+            [
+                1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0,
+                1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1,
+                0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+                1, 0, 0, 1
+            ],
+            [
+                0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1,
+                0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0,
+                0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1,
+                0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+                0, 0, 0, 1
+            ],
+            [
+                0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0,
+                1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0,
+                0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0,
+                1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1,
+                0, 0, 0, 0
+            ],
+            [
+                1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1,
+                0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1,
+                0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0,
+                0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1,
+                0, 1, 0, 0
+            ],
+            [
+                0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1,
+                0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0,
+                0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0,
+                1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+                0, 1, 0, 0
+            ],
+            [
+                0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0,
+                1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0,
+                1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0,
+                0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0,
+                1, 1, 1, 1
+            ],
+            [
+                1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1,
+                0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,
+                0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0,
+                0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0,
+                1, 1, 1, 1
+            ],
+            [
+                1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+                1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1,
+                1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0,
+                0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0,
+                0, 1, 1, 0
+            ]
+        ]
+    })
+
     describe('allocateBlocks()', () => {
         const allocateBlocks = require('../lib/allocateBlocks')
 
@@ -62,62 +280,80 @@ describe('libs: data & blocks', () => {
     describe('blocksToBinary()', () => {
         const blocksToBinary = require('../lib/blocksToBinary')
 
-        beforeAll(() => {
-            blocksAsBinary = [
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 1, 1, 0, 1, 0, 0, 0,
-                    0, 1, 1, 0, 0, 1, 0, 1,
-                    0, 1, 1, 0, 1, 1, 0, 0
-                ],
-                [
-                    0, 1, 1, 0, 1, 1, 0, 0,
-                    0, 1, 1, 0, 1, 1, 1, 1,
-                    0, 0, 1, 0, 0, 0, 0, 0,
-                    0, 1, 1, 1, 0, 1, 1, 1,
-                    0, 1, 1, 0, 1, 1, 1, 1,
-                    0, 1, 1, 1, 0, 0, 1, 0,
-                    0, 1, 1, 0, 1, 1, 0, 0,
-                    0, 1, 1, 0, 0, 1, 0, 0
+        beforeEach(() => {
+            basicCtxObj = {
+                status: []
+            }
+
+            ctx = Object.assign(basicCtxObj, {
+                blocks: [
+                    Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x68, 0x65, 0x6c]),
+                    Buffer.from([0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64])
                 ]
-            ]
+            })
         })
+
+        test('should return correct data as array of zeroes and ones of length 64', () => {
+            assert.deepStrictEqual(blocksToBinary.call(ctx).blocks, blocksAsBinaryBeforeIP)
+        })
+    })
+
+
+    describe('initialPermutation()', () => {
+        const initialPermutation = require('../lib/initialPermutation')
 
         beforeEach(() => {
             basicCtxObj = {
                 status: []
             }
 
-            ctx = Object.assign(
-                {
-                    blocks: [Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x68, 0x65, 0x6c]), Buffer.from([0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64])]
-                },
-                basicCtxObj
-            )
+            ctx = Object.assign(basicCtxObj, {
+                blocks: blocksAsBinaryBeforeIP
+            })
         })
 
-        test('should return correct data as array of zeroes and ones of length 64', () => {
-            assert.deepStrictEqual(blocksToBinary.call(ctx).blocks, blocksAsBinary)
+        test('should return correct binary blocks array after initial permutation', () => {
+            assert.deepStrictEqual(initialPermutation.call(ctx).blocks, blocksAsBinaryAfterIP)
         })
     })
 
 
-    xdescribe('initialPermutation()', () => {
-        xtest('', () => { })
+    describe('getBlockHalves()', () => {
+        const getBlockHalves = require('../lib/getBlocksHalves')
+
+        beforeEach(() => {
+            basicCtxObj = {
+                status: []
+            }
+
+            ctx = Object.assign(basicCtxObj, {
+                blocks: blocksAsBinaryAfterIP
+            })
+        })
+
+        test('should return correct block halves object after getting halves', () => {
+            assert.deepStrictEqual(getBlockHalves.call(ctx).blocks, blocksHalves)
+        })
     })
 
 
-    xdescribe('getBlockHalves()', () => {
-        xtest('', () => { })
-    })
+    describe('roundFunction()', () => {
+        const roundFunction = require('../lib/roundFunction')
 
+        beforeEach(() => {
+            basicCtxObj = {
+                status: [],
+                roundKeys: encryptionRoundKeys
+            }
 
-    xdescribe('roundFunction()', () => {
-        xtest('', () => { })
+            ctx = Object.assign(basicCtxObj, {
+                blocks: blocksHalves
+            })
+        })
+
+        test('should return correct block halves object after sixteen rounds of encryption', () => {
+            assert.deepStrictEqual(roundFunction.call(ctx).blocks, blockHalvesAfterSixteenRounds)
+        })
     })
 
 
@@ -131,3 +367,5 @@ describe('libs: data & blocks', () => {
     })
 
 })
+
+// FIXME: move basicCtxObject to beforeAll
