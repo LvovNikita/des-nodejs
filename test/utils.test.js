@@ -1,7 +1,7 @@
 const assert = require('node:assert')
 
 describe('utils', () => {
-    describe('isNumber', () => {
+    describe('isNumber()', () => {
         const isNumber = require('../utils/isNumber')
 
         test('should return true for integers', () => {
@@ -116,7 +116,7 @@ describe('utils', () => {
     })
 
 
-    describe('getParityBit', () => {
+    describe('getParityBit()', () => {
         const getParityBit = require('../utils/getParityBit')
 
         test('should return parity bit so number of ones becomes even', () => {
@@ -169,7 +169,7 @@ describe('utils', () => {
     })
 
 
-    describe('permutate', () => {
+    describe('permutate()', () => {
         const permutate = require('../utils/permutate')
 
         beforeEach(() => {
