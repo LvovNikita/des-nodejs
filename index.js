@@ -44,9 +44,9 @@ class DES {
      */
     encrypt(plaintext) {
         this.blocks = []
-        this.data = plaintext
+        // this.data = plaintext
         this
-            .#allocateBlocks()  // block: Array<buffer>
+            .#allocateBlocks(plaintext)  // block: Array<buffer>
             .#blocksToBinary()  // block: Array<number>
             .#ip()              // block: Array<number>
             .#getBlocksHalves() // block: Object {L: Array<number>, R: Array<number} 
