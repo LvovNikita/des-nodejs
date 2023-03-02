@@ -10,21 +10,22 @@ const des = new DES(key)
 // Шифрование:
 const plaintext = 'hello world'
 des.encrypt(plaintext)
-console.log(des.data)           // buffer
-console.log(des.dataAsString)   // string
+console.log(des)
+// console.log(des.data)           // buffer
+// console.log(des.dataAsString)   // string
 
 // Расшифрование:
-const ciphertext = des.data
-des.decrypt(ciphertext)
-console.log(des.data)           // buffer
-console.log(des.dataAsString)   // string
+// const ciphertext = des.data
+// des.decrypt(ciphertext)
+// console.log(des.data)           // buffer
+// console.log(des.dataAsString)   // string
 
 // process.exit(0) // comment to run lines below
 
 // Для шифрования файлов:
-const file = fs.readFileSync('./frank-dudek-Tg8HCInX4gY-unsplash.jpg')
-des.encrypt(file)
-fs.writeFileSync('output', des.data)
+// const file = fs.readFileSync('./frank-dudek-Tg8HCInX4gY-unsplash.jpg')
+// des.encrypt(file)
+// fs.writeFileSync('output', des.data)
 
 // Для расшифрования файлов:
 // const file2 = fs.readFileSync('./output')

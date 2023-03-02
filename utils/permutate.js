@@ -1,18 +1,20 @@
 'use strict'
 
-const isNumber = require('./isNumber')
+const bufferToBinary = require('./bufferToBinary')
 
 module.exports = (src, pbox) => {
-    if (!(Array.isArray(src) && Array.isArray(pbox))) {
-        throw new TypeError('args expected to be arrays')
+    if (!Array.isArray(pbox)) {
+        throw new TypeError('pbox expected to be an array')
     }
-    else if (!pbox.every(elem => isNumber(elem))) {
-        throw new TypeError('pbox should be an array of numbers')
+    if (!Buffer.isBuffer(src)) {
+        throw new TypeError('src expected to be a buffer')
     }
-
-    const result = []
+    src = bufferToBinary(src)
+    let result = new Array(7).fill(null).map(elem => [])
     for (let i = 0; i < pbox.length; i++) {
-        result[i] = src[pbox[i]]
+        result[~~(i / 8)].push(src[pbox[i]])
     }
-    return result
+    result = result
+        .map(elem => parseInt(elem.join(''), 2))
+    return Buffer.from(result)
 }

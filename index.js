@@ -22,7 +22,7 @@ class DES {
     constructor(key) {
         this.key = DES.allocateKey(key)                     // Array<number>
         this.roundKeys = DES.generateRoundKeys(this.key)    // Array<Array<number>>
-        this.status = ['ALLOCATE KEY']
+        // this.status = ['ALLOCATE KEY']
         this.data = null
         this.blocks = []
     }
@@ -44,15 +44,14 @@ class DES {
      */
     encrypt(plaintext) {
         this.blocks = []
-        // this.data = plaintext
         this
             .#allocateBlocks(plaintext)  // block: Array<buffer>
-            .#blocksToBinary()  // block: Array<number>
-            .#ip()              // block: Array<number>
-            .#getBlocksHalves() // block: Object {L: Array<number>, R: Array<number} 
-            .#f()
-            .#fp()
-            .#blocksToBuffer()
+            // .#blocksToBinary()  // block: Array<number>
+            // .#ip()              // block: Array<number>
+            // .#getBlocksHalves() // block: Object {L: Array<number>, R: Array<number} 
+            // .#f()
+            // .#fp()
+            // .#blocksToBuffer()
         return this
     }
 
