@@ -1,5 +1,3 @@
-'use strict'
-
 module.exports = array => {
     if (!Array.isArray(array)) {
         throw new TypeError('array arg expected to be an array')

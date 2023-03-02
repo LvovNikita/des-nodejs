@@ -1,8 +1,6 @@
-'use strict'
+const byteToBinary = require('./byteToBinary')
 
-const byteToBinary = require('./byteToBinary') 
-
-// TODO: use buffers and Uint8Arrays instead!
+// TODO: use buffers instead!
 
 module.exports = buffer => {
     if (!Buffer.isBuffer(buffer)) {

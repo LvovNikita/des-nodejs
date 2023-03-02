@@ -1,5 +1,3 @@
-'use strict'
-
 const bufferToBinary = require('./bufferToBinary')
 const binaryToBuffer = require('./binaryToBuffer')
 

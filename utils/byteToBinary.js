@@ -1,8 +1,4 @@
-'use strict'
-
 const isNumber = require('./isNumber')
-
-// TODO: return buffer instead
 
 module.exports = byte => { 
     if (!isNumber(byte)) {
