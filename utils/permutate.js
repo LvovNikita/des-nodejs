@@ -1,6 +1,7 @@
 'use strict'
 
 const bufferToBinary = require('./bufferToBinary')
+const binaryToBuffer = require('./binaryToBuffer')
 
 module.exports = (src, pbox) => {
     if (!Array.isArray(pbox)) {
@@ -9,12 +10,10 @@ module.exports = (src, pbox) => {
     if (!Buffer.isBuffer(src)) {
         throw new TypeError('src expected to be a buffer')
     }
-    let result = new Array(src.byteLength).fill(null).map(elem => [])
     src = bufferToBinary(src)
-    for (let i = 0; i < pbox.length; i++) {
-        result[~~(i / 8)].push(src[pbox[i]])
+    const result = []
+    for (const pos of pbox) {
+        result.push(src[pos])
     }
-    result = result
-        .map(elem => parseInt(elem.join(''), 2))
-    return Buffer.from(result)
+    return binaryToBuffer(result)
 }

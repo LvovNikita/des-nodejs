@@ -45,11 +45,11 @@ class DES {
     encrypt(plaintext) {
         this.blocks = []
         this
-            .#allocateBlocks(plaintext)  // block: Array<buffer>
-            // .#blocksToBinary()  // block: Array<number> // TODO: remove
-            .#ip()              // block: Array<number>
-            .#getBlocksHalves() // block: Object {L: Array<number>, R: Array<number} 
-            // .#f()
+            .#allocateBlocks(plaintext)  
+            // .#blocksToBinary() // TODO: remove
+            .#ip()              
+            .#getBlocksHalves()
+            .#f()
             // .#fp()
             // .#blocksToBuffer()
         return this
