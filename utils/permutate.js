@@ -9,8 +9,8 @@ module.exports = (src, pbox) => {
     if (!Buffer.isBuffer(src)) {
         throw new TypeError('src expected to be a buffer')
     }
+    let result = new Array(src.byteLength).fill(null).map(elem => [])
     src = bufferToBinary(src)
-    let result = new Array(7).fill(null).map(elem => [])
     for (let i = 0; i < pbox.length; i++) {
         result[~~(i / 8)].push(src[pbox[i]])
     }

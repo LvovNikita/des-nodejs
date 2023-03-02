@@ -4,7 +4,7 @@ const { StringDecoder } = require('node:string_decoder')
 
 const allocateKey = require('./lib/allocateKey')
 const allocateBlocks = require('./lib/allocateBlocks')
-const blocksToBinary = require('./lib/blocksToBinary')
+// const blocksToBinary = require('./lib/blocksToBinary')
 const initialPermutation = require('./lib/initialPermutation')
 const getBlocksHalves = require('./lib/getBlocksHalves')
 const generateRoundKeys = require('./lib/generateRoundKeys')
@@ -22,7 +22,7 @@ class DES {
     constructor(key) {
         this.key = DES.allocateKey(key)                     // Array<number>
         this.roundKeys = DES.generateRoundKeys(this.key)    // Array<Array<number>>
-        // this.status = ['ALLOCATE KEY']
+        this.status = ['ALLOCATE KEY']
         this.data = null
         this.blocks = []
     }
@@ -30,7 +30,7 @@ class DES {
     // Private methods:
 
     #allocateBlocks = allocateBlocks
-    #blocksToBinary = blocksToBinary
+    // #blocksToBinary = blocksToBinary
     #ip = initialPermutation
     #getBlocksHalves = getBlocksHalves
     #f = roundFunction
@@ -46,9 +46,9 @@ class DES {
         this.blocks = []
         this
             .#allocateBlocks(plaintext)  // block: Array<buffer>
-            // .#blocksToBinary()  // block: Array<number>
-            // .#ip()              // block: Array<number>
-            // .#getBlocksHalves() // block: Object {L: Array<number>, R: Array<number} 
+            // .#blocksToBinary()  // block: Array<number> // TODO: remove
+            .#ip()              // block: Array<number>
+            .#getBlocksHalves() // block: Object {L: Array<number>, R: Array<number} 
             // .#f()
             // .#fp()
             // .#blocksToBuffer()
