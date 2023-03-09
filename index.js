@@ -23,16 +23,12 @@ class DES {
         this.blocks = []
     }
     
-    // Private methods:
-
     #allocateBlocks = allocateBlocks
     #ip = initialPermutation
     #getBlocksHalves = getBlocksHalves
     #f = roundFunction
     #fp = finalPermutation
     #joinBlocks = joinBlocks
-
-    // Public methods:
 
     encrypt(plaintext) { // :buffer | string
         this.blocks = []

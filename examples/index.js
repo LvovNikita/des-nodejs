@@ -1,33 +1,32 @@
-// const fs = require('node:fs') // для шифрования файлов
+const fs = require('node:fs')
 const DES = require('../index.js')
 
-// Ключ шифрования/расшифрования:
+// Key:
 const key = 'SECRETK'
 
-// Создание экземпляра:
+// DES instance:
 const des = new DES(key)
 
-// Шифрование:
+// Encryption:
 const plaintext = 'hello world'
 des.encrypt(plaintext)
-// console.log(des)
 console.log(des.data)           // buffer
 console.log(des.dataAsString)   // string
 
-// Расшифрование:
+// Decryption:
 const ciphertext = des.data
 des.decrypt(ciphertext)
 console.log(des.data)           // buffer
 console.log(des.dataAsString)   // string
 
-// process.exit(0) // comment to run lines below
+process.exit(0) // Comment to run lines below
 
-// Для шифрования файлов:
-// const file = fs.readFileSync('./input.txt')
-// des.encrypt(file)
-// fs.writeFileSync('output', des.data)
+// Fils encryption:
+const file = fs.readFileSync('./input.txt')
+des.encrypt(file)
+fs.writeFileSync('output', des.data)
 
-// Для расшифрования файлов:
-// const file2 = fs.readFileSync('./output')
-// des.decrypt(file2)
-// fs.writeFileSync('output2.txt', des.data)
+// File decryption:
+const file2 = fs.readFileSync('./output')
+des.decrypt(file2)
+fs.writeFileSync('output2.txt', des.data)
