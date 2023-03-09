@@ -2,14 +2,14 @@
 
 const { StringDecoder } = require('node:string_decoder')
 
-const allocateKey = require('./lib/allocateKey')
-const allocateBlocks = require('./lib/allocateBlocks')
-const initialPermutation = require('./lib/initialPermutation')
-const getBlocksHalves = require('./lib/getBlocksHalves')
-const generateRoundKeys = require('./lib/generateRoundKeys')
+const allocateKey = require('./lib/keys/allocateKey')
+const allocateBlocks = require('./lib/blocks/allocateBlocks')
+const initialPermutation = require('./lib/permutations/initialPermutation')
+const getBlocksHalves = require('./lib/blocks/getBlocksHalves')
+const generateRoundKeys = require('./lib/keys/generateRoundKeys')
 const roundFunction = require('./lib/roundFunction')
-const finalPermutation = require('./lib/finalPermutation')
-const joinBlocks = require('./lib/joinBlocks')
+const finalPermutation = require('./lib/permutations/finalPermutation')
+const joinBlocks = require('./lib/blocks/joinBlocks')
 
 class DES {
     static allocateKey = allocateKey
